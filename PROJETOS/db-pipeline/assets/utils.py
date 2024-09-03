@@ -4,7 +4,7 @@ import logging
 import datetime
 
 
-logging.basicConfig(filename='data/flights_pipe_log.log', level=logging.INFO)
+logging.basicConfig(filename='./flights_pipe_log.log', level=logging.INFO)
 logger = logging.getLogger()
 
 def read_metadado(meta_path):
@@ -93,15 +93,20 @@ def null_check(df, null_tolerance):
         else:
              logger.info(
                 f"{col} possui nulos dentro do esperado; {datetime.datetime.now()}")
-            
-def keys_check(df, cols_chaves):
-    '''
-    Função ???????????????????????????
-    INPUT: ???????????????????????????
-    OUTPUT: ???????????????????????????
-    '''
-    #colocar log info
-    pass
+
+def keys_check(df, colunas_chave):
+    """
+    Função para verificar a presença e validade das colunas chave.
+    INPUT: Pandas DataFrame, lista de colunas chave.
+    OUTPUT: Verificação e validação das colunas chave.
+    """
+    # Iterar sobre cada coluna chave e verificar sua presença no DataFrame
+    for coluna in colunas_chave:
+        if coluna in df.columns:
+            logger.info(f"A coluna chave '{coluna}' está presente no DataFrame.")
+        else:
+            logger.error(f"A coluna chave '{coluna}' não está presente no DataFrame.")
+
 
 # Funções auxiliares -------------------------------------------
 

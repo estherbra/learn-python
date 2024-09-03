@@ -30,18 +30,53 @@ def data_clean(df, metadados):
     logger.info(f'Saneamento concluído; {datetime.datetime.now()}')
     return df
 
+def classifica_hora(hra):
+    if 0 <= hra < 6: return "MADRUGADA"
+    elif 6 <= hra < 12: return "MANHA"
+    elif 12 <= hra < 18: return "TARDE"
+    else: return "NOITE"
+
 def feat_eng(df):
-    '''
-    Função ???????????????????????????
-    INPUT: ???????????????????????????
-    OUTPUT: ???????????????????????????
-    '''
-    #colocar log info
-    pass
+    """
+    Função que cria novas colunas
+    INPUT: Pandas DataFrame
+    OUTPUT: Pandas DataFrame com novas colunas: tempo_voo_esperado, tempo_voo_hr, atraso, dia_semana, flag_atraso, flag_adiantado e horario (manhã/tarde/noite/madrugada).
+    """
+    # Criação de coluna 'tempo_voo_esperado'
+    df["tempo_voo_esperado"] = (df["datetime_chegada_formatted"] - df["datetime_partida_formatted"]) / pd.Timedelta(hours=1)
+    logger.info(f"'tempo_voo_esperado' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'tempo_voo_hr'
+    df["tempo_voo_hr"] = df["tempo_voo"] / 60
+    logger.info(f"'tempo_voo_hr' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'atraso'
+    df["atraso"] = df["tempo_voo_hr"] - df["tempo_voo_esperado"]
+    logger.info(f"'atraso' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'flag_atraso'
+    df["flag_atraso"] = df["atraso"] > 0.6
+    logger.info(f"'flag_atraso' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'flag_adiantado'
+    df["flag_adiantado"] = df["atraso"] < -0.5
+    logger.info(f"'flag_adiantado' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'dia_semana'
+    df["dia_semana"] = df["data_voo"].dt.dayofweek  # 0=segunda
+    logger.info(f"'dia_semana' criada em {datetime.datetime.now()}")
+
+    # Criação de coluna 'horario'
+    df["horario"] = df["datetime_partida_formatted"].dt.hour.apply(classifica_hora)
+    logger.info(f"'horario' criada em {datetime.datetime.now()}")
+
+    logger.info(f"Feature Engineering concluída em {datetime.datetime.now()}")
+    return df
+
 
 def save_data_sqlite(df):
     try:
-        conn = sqlite3.connect("data/NyflightsDB.db")
+        conn = sqlite3.connect("./NyflightsDB.db")
         logger.info(f'Conexão com banco estabelecida ; {datetime.datetime.now()}')
     except:
         logger.error(f'Problema na conexão com banco; {datetime.datetime.now()}')
@@ -53,7 +88,7 @@ def save_data_sqlite(df):
 
 def fetch_sqlite_data(table):
     try:
-        conn = sqlite3.connect("data/NyflightsDB.db")
+        conn = sqlite3.connect("./NyflightsDB.db")
         logger.info(f'Conexão com banco estabelecida ; {datetime.datetime.now()}')
     except:
         logger.error(f'Problema na conexão com banco; {datetime.datetime.now()}')
